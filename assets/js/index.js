@@ -1,43 +1,5 @@
 'use strict';
 
-/*1. Промисифицировать setTimeout() : напишите функцию delay(ms), которая возвращает промис, переходящий в состояние
-"resolved" через ms миллисекунд.
-Должен быть возможен вот такой вызов delay(ms).then(doSomething)
-
-Пример использования и эквивалетный вызов setTimeout():
-delay(1000).then(() => alert("Hello!"))
-
-setTimeout(()=> alert("Hello!"),1000)
-*/
-
-delay(1000).then(() => alert("Hello!"));
-
-function delay(ms) {
-    return new Promise((resolve, reject) => {
-        setTimeout( () => resolve(), ms);
-    });
-}
-
-/*2. Напишите функцию, которая последовательно выводит в консоль числа от 1 до 20, с интервалом между числами 100мс.
-То есть, весь вывод должен занимать 2000мс, в течение которых каждые 100мс в консоли появляется очередное число.
-Решение задачи должно использовать setTimeout. (По циклу таймеры не создавать)*/
-
-console.time('timeout');
-logNumbersWithTimeout();
-
-function logNumbersWithTimeout() {
-    let i = 1;
-    let timeoutId = setTimeout(function logNumbers() {
-        console.log(i);
-        i++;
-        timeoutId = setTimeout(logNumbers, 100);
-        if (i > 20) {
-            clearTimeout(timeoutId);
-            console.timeEnd('timeout');
-        }
-    }, 100);
-}
-
 /*3. Доделать "fetch users practice" . Асинхронно подгружать информацию о пользователях из users.json и рендерить
 карточки пользователей. Файл users.json не менять. Профессию каждого пользователя сделать рандомной по вашему массиву.
 Вёрстка должна быть сделана адаптивно. Все карточки размещать в ряд, как на card_pattern.png. Карточку, на которую
@@ -48,6 +10,34 @@ const root = document.getElementById('root');
 fetch('../../users.json')
 .then(responce => responce.json())
 .then(createUsersList)
+
+fetch('http://192.168.1.148:3000/auth')
+.then(res => res.json())
+.then(renderAuthUser)
+
+function renderAuthUser(user) {
+    console.log(user);
+    const { firstName, lastName, position, profilePicture } = user;
+    const header = document.getElementById('header');
+    const userInfo = document.createElement('div');
+    const fullname = document.createElement('div');
+    const userPosition = document.createElement('div');
+    const iconWrapper = document.createElement('div');
+    const userPhoto = document.createElement('img');
+
+    userInfo.classList.add('userInfo');
+    fullname.classList.add('fullnameAuthUser');
+    userPosition.classList.add('positionAuthUser');
+    iconWrapper.classList.add('iconWrapperAuthUser');
+
+    fullname.textContent = `${firstName} ${lastName}`;
+    userPosition.textContent = position;
+    userPhoto.src = profilePicture;
+
+    iconWrapper.append(userPhoto);
+    userInfo.append(fullname, userPosition);
+    header.append(userInfo, iconWrapper);
+}
 
 function createUsersList(users) {
     const userCardsWrapper = document.createElement('ul');
