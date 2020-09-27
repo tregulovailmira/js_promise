@@ -8,44 +8,15 @@
     --active-element-shadow: 0px 0px 27px -1px rgba(199,195,199,1);
 }
 
+body {
+    background-color: var(--body-color);
+    font-family: 'Open Sans', sans-serif;
+}
+
 #root{
     padding: 60px;
     font-size: 2rem;
     text-align: center;
-}
-
-header{
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    position: fixed;
-    height: 60px;
-    width: 100%;
-    background-color: white;
-}
-
-header img {
-    width: 40px;
-    margin: 0 10px;
-}
-
-.userInfo{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.fullnameAuthUser{
-    margin: 5px 15px;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.positionAuthUser{
-    /* margin: 5px 15px; */
-    font-size: 0.8rem;
-    color: gray;
-
 }
 
 .displayFlex{
@@ -54,26 +25,51 @@ header img {
     align-items: center;
 }
 
-body {
-    background-color: var(--body-color);
-    /* padding: 30px; */
+#header{
+    justify-content: flex-end;
+    position: fixed;
+    height: 60px;
+    width: 100%;
+    background-color: white;
+}
+
+header img {
+    width: 40px;
+    margin: 0 20px;
+}
+
+.authUserInfo {
+    flex-direction: column;
+}
+
+.fullNameAuthUser{
+    margin: 5px 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.positionAuthUser{
+    font-size: 0.8rem;
+    color: gray;
+
+}
+
+.selectedUser {
+    min-height: 50px;
+    margin: 20px 0;
 }
 
 .userCardsWrapper {
     flex-wrap: wrap;
-    font-family: 'Open Sans', sans-serif;
 }
 
 .userCard {
     flex-direction: column;
-
     margin: 15px;
     padding: 20px 0;
-
     min-width: 280px;
     max-width: 300px;
     border-radius: 10px;
-
     background-color: var(--light-color);
     transition: 1s;
 }

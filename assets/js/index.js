@@ -9,7 +9,7 @@ const root = document.getElementById('root');
 
 render();
 
-async function render () {
+async function render() {
     const authUser = await fetchAuthUser();
     const users = await fetchUsers();
     renderAuthUser(authUser);
@@ -17,7 +17,7 @@ async function render () {
 }
 
 async function fetchAuthUser() {
-    try{
+    try {
         const localAuthUser = localStorage.getItem('user');
         if (localAuthUser) {
             return JSON.parse(localAuthUser);
@@ -27,7 +27,7 @@ async function fetchAuthUser() {
             localStorage.setItem('user', JSON.stringify(authUser));
             return authUser;
         }
-    } catch(e) {
+    } catch (e) {
         renderError();
     }
 }
@@ -51,7 +51,7 @@ function renderAuthUser(user) {
     const iconWrapper = document.createElement('div');
     const userPhoto = document.createElement('img');
 
-    userInfo.classList.add('userInfo');
+    userInfo.classList.add('authUserInfo', 'displayFlex');
     fullName.classList.add('fullNameAuthUser');
     userPosition.classList.add('positionAuthUser');
     iconWrapper.classList.add('iconWrapperAuthUser');
@@ -70,12 +70,16 @@ function renderUsers(users) {
     userCardsWrapper.classList.add('userCardsWrapper', 'displayFlex');
     root.append(userCardsWrapper);
 
+    const divWithSelectedUser = document.createElement('div');
+    divWithSelectedUser.classList.add('selectedUser');
+    root.prepend(divWithSelectedUser);
+
     const userCards = users.map((user) => createUserCard({
             onClick: userCardHandler,
             renderActiveUser: renderNameOfActiveUser,
             children: [
                 getUserPhoto(user),
-                getFullname(user),
+                getFullName(user),
                 getProfession(),
                 createButton(user.id, 'Connect'),
             ]
@@ -113,15 +117,15 @@ function getUserPhoto({ profilePicture, firstName, lastName }) {
 }
 
 function imageOnErrorHandler(userPhotoWrapper, lastName, firstName) {
-    if(!firstName && !lastName) {
+    if (!firstName && !lastName) {
         userPhotoWrapper.textContent = '?';
     } else {
         userPhotoWrapper.textContent = firstName.charAt(0) + lastName.charAt(0);
     }
     userPhotoWrapper.classList.add('userIconWithInitials', 'displayFlex');
-};
+}
 
-function getFullname({ firstName, lastName }) {
+function getFullName({ firstName, lastName }) {
     const fullName = document.createElement('div');
 
     fullName.classList.add('fullName');
@@ -154,37 +158,30 @@ function createButton(value, text) {
     return connectButton;
 }
 
-function userCardHandler (event) {
+function userCardHandler(event) {
     const { currentTarget } = event;
     const activeCard = document.querySelector('.activeUserCard');
 
-    if(activeCard && activeCard !== currentTarget) {
+    if (activeCard && activeCard !== currentTarget) {
         activeCard.classList.remove('activeUserCard');
     }
 
     currentTarget.classList.toggle('activeUserCard');
 }
 
-function renderNameOfActiveUser (event) {
-    const { currentTarget } = event;
-    const root = document.getElementById('root');
+function renderNameOfActiveUser() {
     const activeUserFullName = document.querySelector('.activeUserCard .fullName');
-    const renderUserName = document.querySelector('.renderUserName');
+    const selectedUser = document.querySelector('.selectedUser');
 
-    if (renderUserName) {
-        renderUserName.remove();
+    if (selectedUser) {
+        selectedUser.textContent = '';
     }
-        const divWithCheckedUser = document.createElement('div');
-        divWithCheckedUser.classList.add('renderUserName');
-        divWithCheckedUser.textContent = activeUserFullName.textContent;
-        root.prepend(divWithCheckedUser);
-        return divWithCheckedUser;
+    selectedUser.textContent = activeUserFullName.textContent;
+
 }
 
-function addQueryParam(event) {
+function addQueryParam() {
     const button = document.querySelector('.activeUserCard .connectButton');
     const id = button.dataset.id;
     history.pushState(null, null, `?id=${id}`);
 }
-
-
