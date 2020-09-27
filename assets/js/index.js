@@ -7,45 +7,72 @@
 
 const root = document.getElementById('root');
 
-fetch('../../users.json')
-.then(responce => responce.json())
-.then(createUsersList)
+render();
 
-fetch('http://192.168.1.148:3000/auth')
-.then(res => res.json())
-.then(renderAuthUser)
+async function render () {
+    const authUser = await fetchAuthUser();
+    const users = await fetchUsers();
+    renderAuthUser(authUser);
+    renderUsers(users);
+}
+
+async function fetchAuthUser() {
+    try{
+        const localAuthUser = localStorage.getItem('user');
+        if (localAuthUser) {
+            return JSON.parse(localAuthUser);
+        } else {
+            const responseAuthUser = await fetch('../../auth.json');
+            const authUser = await responseAuthUser.json();
+            localStorage.setItem('user', JSON.stringify(authUser));
+            return authUser;
+        }
+    } catch(e) {
+        renderError();
+    }
+}
+
+async function fetchUsers() {
+    const responseUsers = await fetch('../../users.json');
+    return responseUsers.json();
+}
+
+function renderError() {
+    const root = document.getElementById('root');
+    root.textContent = 'Authorisation error';
+}
 
 function renderAuthUser(user) {
-    console.log(user);
     const { firstName, lastName, position, profilePicture } = user;
     const header = document.getElementById('header');
     const userInfo = document.createElement('div');
-    const fullname = document.createElement('div');
+    const fullName = document.createElement('div');
     const userPosition = document.createElement('div');
     const iconWrapper = document.createElement('div');
     const userPhoto = document.createElement('img');
 
     userInfo.classList.add('userInfo');
-    fullname.classList.add('fullnameAuthUser');
+    fullName.classList.add('fullNameAuthUser');
     userPosition.classList.add('positionAuthUser');
     iconWrapper.classList.add('iconWrapperAuthUser');
 
-    fullname.textContent = `${firstName} ${lastName}`;
+    fullName.textContent = `${firstName} ${lastName}`;
     userPosition.textContent = position;
     userPhoto.src = profilePicture;
 
     iconWrapper.append(userPhoto);
-    userInfo.append(fullname, userPosition);
+    userInfo.append(fullName, userPosition);
     header.append(userInfo, iconWrapper);
 }
 
-function createUsersList(users) {
+function renderUsers(users) {
     const userCardsWrapper = document.createElement('ul');
     userCardsWrapper.classList.add('userCardsWrapper', 'displayFlex');
     root.append(userCardsWrapper);
 
     const userCards = users.map((user) => createUserCard({
             onClick: userCardHandler,
+            renderActiveUser: renderNameOfActiveUser,
             children: [
                 getUserPhoto(user),
                 getFullname(user),
@@ -58,12 +85,17 @@ function createUsersList(users) {
     userCardsWrapper.append(...userCards);
 }
 
-function createUserCard({ onClick = () => {}, children }) {
+function createUserCard({ onClick = () => {}, renderActiveUser = () => {}, children }) {
     const userCard = document.createElement('li');
 
     userCard.classList.add('userCard', 'displayFlex');
     userCard.append(...children);
-    userCard.onclick = onClick;
+    userCard.onclick = (e) => {
+
+        onClick(e);
+        renderActiveUser(e);
+        addQueryParam(e);
+    };
 
     return userCard;
 }
@@ -117,7 +149,7 @@ function createButton(value, text) {
 
     connectButton.classList.add('connectButton');
     connectButton.textContent = text;
-    connectButton.dataset.value = value;
+    connectButton.dataset.id = value;
 
     return connectButton;
 }
@@ -128,7 +160,31 @@ function userCardHandler (event) {
 
     if(activeCard && activeCard !== currentTarget) {
         activeCard.classList.remove('activeUserCard');
-    };
+    }
 
     currentTarget.classList.toggle('activeUserCard');
 }
+
+function renderNameOfActiveUser (event) {
+    const { currentTarget } = event;
+    const root = document.getElementById('root');
+    const activeUserFullName = document.querySelector('.activeUserCard .fullName');
+    const renderUserName = document.querySelector('.renderUserName');
+
+    if (renderUserName) {
+        renderUserName.remove();
+    }
+        const divWithCheckedUser = document.createElement('div');
+        divWithCheckedUser.classList.add('renderUserName');
+        divWithCheckedUser.textContent = activeUserFullName.textContent;
+        root.prepend(divWithCheckedUser);
+        return divWithCheckedUser;
+}
+
+function addQueryParam(event) {
+    const button = document.querySelector('.activeUserCard .connectButton');
+    const id = button.dataset.id;
+    history.pushState(null, null, `?id=${id}`);
+}
+
+
