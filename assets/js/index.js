@@ -10,10 +10,16 @@ const root = document.getElementById('root');
 render();
 
 async function render() {
-    const authUser = await fetchAuthUser();
-    const users = await fetchUsers();
-    renderAuthUser(authUser);
-    renderUsers(users);
+    try {
+        const authUser = await fetchAuthUser();
+        const users = await fetchUsers();
+
+        renderAuthUser(authUser);
+        renderUsers(users);
+    } catch (e) {
+        renderError(e);
+    }
+
 }
 
 async function fetchAuthUser() {
@@ -28,7 +34,7 @@ async function fetchAuthUser() {
             return authUser;
         }
     } catch (e) {
-        renderError();
+        throw new Error('Authorisation Error');
     }
 }
 
@@ -37,46 +43,39 @@ async function fetchUsers() {
     return responseUsers.json();
 }
 
-function renderError() {
+function renderError(msg) {
     const root = document.getElementById('root');
-    root.textContent = 'Authorisation error';
+    root.textContent = msg;
 }
 
-function renderAuthUser(user) {
-    const { firstName, lastName, position, profilePicture } = user;
-    const header = document.getElementById('header');
-    const userInfo = document.createElement('div');
-    const fullName = document.createElement('div');
-    const userPosition = document.createElement('div');
-    const iconWrapper = document.createElement('div');
-    const userPhoto = document.createElement('img');
-
-    userInfo.classList.add('authUserInfo', 'displayFlex');
-    fullName.classList.add('fullNameAuthUser');
-    userPosition.classList.add('positionAuthUser');
-    iconWrapper.classList.add('iconWrapperAuthUser');
-
-    fullName.textContent = `${firstName} ${lastName}`;
-    userPosition.textContent = position;
-    userPhoto.src = profilePicture;
-
-    iconWrapper.append(userPhoto);
-    userInfo.append(fullName, userPosition);
-    header.append(userInfo, iconWrapper);
+function renderAuthUser(authUser) {
+    renderHeader({
+        children: [
+            getAuthUserInfo({
+                children: [
+                    getFullName(authUser),
+                    getAuthUserPosition(authUser),
+                ]
+            }),
+            getUserPhoto(authUser),
+        ]
+    });
 }
 
 function renderUsers(users) {
     const userCardsWrapper = document.createElement('ul');
     userCardsWrapper.classList.add('userCardsWrapper', 'displayFlex');
-    root.append(userCardsWrapper);
+
 
     const divWithSelectedUser = document.createElement('div');
     divWithSelectedUser.classList.add('selectedUser');
-    root.prepend(divWithSelectedUser);
+
+    root.append(divWithSelectedUser, userCardsWrapper);
 
     const userCards = users.map((user) => createUserCard({
             onClick: userCardHandler,
             renderActiveUser: renderNameOfActiveUser,
+            addQueryParam: addQueryParam,
             children: [
                 getUserPhoto(user),
                 getFullName(user),
@@ -87,6 +86,47 @@ function renderUsers(users) {
     );
 
     userCardsWrapper.append(...userCards);
+}
+
+function renderHeader({ children }) {
+    const header = document.createElement('header');
+    const root = document.getElementById('root');
+
+    header.classList.add('displayFlex');
+    root.prepend(header);
+    header.append(...children);
+
+    return header;
+}
+
+function getAuthUserInfo({ children }) {
+    const userInfo = document.createElement('div');
+
+    userInfo.classList.add('authUserInfo', 'displayFlex');
+    userInfo.append(...children);
+
+    return userInfo;
+}
+
+function getAuthUserPosition({ position }) {
+    const userPosition = document.createElement('div');
+
+    userPosition.classList.add('positionAuthUser');
+    userPosition.textContent = position;
+
+    return userPosition;
+}
+
+function getUserPhoto({ profilePicture, firstName, lastName }) {
+    const userPhotoWrapper = document.createElement('div');
+    const img = document.createElement('img');
+
+    userPhotoWrapper.classList.add('userPhotoWrapper');
+    userPhotoWrapper.append(img);
+    img.src = profilePicture;
+    img.onerror = () => imageOnErrorHandler(userPhotoWrapper, lastName, firstName);
+
+    return userPhotoWrapper;
 }
 
 function createUserCard({ onClick = () => {}, renderActiveUser = () => {}, children }) {
@@ -104,24 +144,8 @@ function createUserCard({ onClick = () => {}, renderActiveUser = () => {}, child
     return userCard;
 }
 
-function getUserPhoto({ profilePicture, firstName, lastName }) {
-    const userPhotoWrapper = document.createElement('div');
-    const img = document.createElement('img');
-
-    userPhotoWrapper.classList.add('userPhotoWrapper');
-    userPhotoWrapper.append(img);
-    img.src = profilePicture;
-    img.onerror = () => imageOnErrorHandler(userPhotoWrapper, lastName, firstName);
-
-    return userPhotoWrapper;
-}
-
 function imageOnErrorHandler(userPhotoWrapper, lastName, firstName) {
-    if (!firstName && !lastName) {
-        userPhotoWrapper.textContent = '?';
-    } else {
-        userPhotoWrapper.textContent = firstName.charAt(0) + lastName.charAt(0);
-    }
+    userPhotoWrapper.textContent = firstName.charAt(0) + lastName.charAt(0) || '?';
     userPhotoWrapper.classList.add('userIconWithInitials', 'displayFlex');
 }
 
@@ -169,19 +193,19 @@ function userCardHandler(event) {
     currentTarget.classList.toggle('activeUserCard');
 }
 
-function renderNameOfActiveUser() {
+function renderNameOfActiveUser(e) {
     const activeUserFullName = document.querySelector('.activeUserCard .fullName');
     const selectedUser = document.querySelector('.selectedUser');
 
-    if (selectedUser) {
-        selectedUser.textContent = '';
-    }
-    selectedUser.textContent = activeUserFullName.textContent;
-
+    (selectedUser.textContent && !activeUserFullName)
+        ? selectedUser.textContent = ''
+        : selectedUser.textContent = activeUserFullName.textContent;
 }
 
-function addQueryParam() {
+function addQueryParam(e) {
     const button = document.querySelector('.activeUserCard .connectButton');
-    const id = button.dataset.id;
-    history.pushState(null, null, `?id=${id}`);
+    if (button) {
+        const id = button.dataset.id;
+        history.pushState(null, null, `?id=${id}`);
+    } else history.pushState(null, null, '/');
 }
