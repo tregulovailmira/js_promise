@@ -13,8 +13,7 @@ body {
     font-family: 'Open Sans', sans-serif;
 }
 
-#root{
-    padding: 60px;
+#root {
     font-size: 2rem;
     text-align: center;
 }
@@ -25,7 +24,7 @@ body {
     align-items: center;
 }
 
-#header{
+header.displayFlex{
     justify-content: flex-end;
     position: fixed;
     height: 60px;
@@ -33,8 +32,9 @@ body {
     background-color: white;
 }
 
-header img {
+header .userPhotoWrapper {
     width: 40px;
+    height: 40px;
     margin: 0 20px;
 }
 
@@ -42,25 +42,27 @@ header img {
     flex-direction: column;
 }
 
-.fullNameAuthUser{
-    margin: 5px 15px;
-    font-size: 1.1rem;
-    font-weight: 600;
+.authUserInfo .fullName {
+    margin: 5px;
 }
 
 .positionAuthUser{
+    margin: 2px;
     font-size: 0.8rem;
     color: gray;
-
 }
 
 .selectedUser {
-    min-height: 50px;
-    margin: 20px 0;
+    box-sizing: border-box;
+    padding-top: 80px;
+    min-height: 150px;
+    font-size: 2rem;
+    text-align: center;
 }
 
 .userCardsWrapper {
     flex-wrap: wrap;
+    margin: 0 20px;
 }
 
 .userCard {
@@ -110,7 +112,7 @@ img {
 .profession {
     color: var(--gray-color);
     margin: 15px 0;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 .connectButton {
